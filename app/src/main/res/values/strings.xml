@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Radio G</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="action_sign_in">Войти</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">Этот email невалидный</string>
+    <string name="error_incorrect_password">Этот пароль некорректный</string>
+    <string name="error_field_required">Это поле обязательно</string>
+
+    <string name="error">Произошла ошибка</string>
+
+    <string name="menu_now">Прямой эфир</string>
+    <string name="menu_schedule">Расписание</string>
+    <string name="menu_about">О нас</string>
+    <string name="menu_profile">Профиль</string>
+
+    <string name="name1">Вадим Тюпалов</string>
+    <string name="name2">Надежда Фадеева</string>
+    <string name="name3">Евгений Горшков</string>
+    <string name="name4">Павел Турусов</string>
+
+    <string name="description1">Ежедневный музыкальный сет «Альтернатива»</string>
+    <string name="description2">Ответы на актуальные вопросы молодежи в «Generation 21»</string>
+    <string name="description3">Познавательная передача «Время путешествий»</string>
+    <string name="description4">Разбор и анонс спортивных событий в «Спортивный вестник»</string>
+
+    <string name="state_error">Problem with loading data</string>
+    <string name="state_error_description">Сheck internet connection</string>
+    <string name="schedule_empty_cap">На сегодня передач нет</string>
+    <string name="schedule_empty_cap_description">Но это не точно</string>
+    <string name="radio_now">прямо сейчас</string>
+    <string name="profile_exit">Выйти</string>
+</resources>
