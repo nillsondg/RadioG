@@ -152,7 +152,7 @@ public class RadioFragment extends Fragment {
     }
 
     public void setStreamTitle(String streamTitle) {
-        //mStreamTitle.setText(streamTitle);
+        mStreamTitle.setText(streamTitle);
     }
 
     public void onRadioStarted() {

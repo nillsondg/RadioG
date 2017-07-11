@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements RadioListener, Ra
     public void onMetaDataReceived(String s, String s1) {
         Log.i(LOG_TAG, s + " || " + s1);
         if (s != null && s.equals("StreamTitle")) {
-            radioFragment.setStreamTitle(s1);
+            runOnUiThread(() -> radioFragment.setStreamTitle(s1));
         }
     }
 

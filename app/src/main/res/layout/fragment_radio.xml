@@ -104,11 +104,14 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
-        tools:text="Параша Радио"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@+id/playButton"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3"/>
+        app:layout_constraintTop_toBottomOf="@+id/textView3"
+        tools:text="Параша Радио"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"/>
 
 </android.support.constraint.ConstraintLayout>
