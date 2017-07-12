@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements RadioListener, Ra
     private AppBarLayout mAppBarLayout;
     private AppBarLayout mCalendarFrame;
     private ScheduleFragment mScheduleFragment;
+    private final int TAB_COUNT = 3;
 
     private int currentItem = 0;
 
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements RadioListener, Ra
 
             @Override
             public int getCount() {
-                return 4;
+                return TAB_COUNT;
             }
         });
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -223,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements RadioListener, Ra
         Log.i(LOG_TAG, s + " || " + s1);
         if (s != null && s.equals("StreamTitle")) {
             runOnUiThread(() -> radioFragment.setStreamTitle(s1));
+            mRadioManager.updateNotification(getString(R.string.app_name), s1, R.drawable.radiog_logo, R.drawable.radiog_logo);
         }
     }
 

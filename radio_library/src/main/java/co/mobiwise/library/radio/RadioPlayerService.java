@@ -40,7 +40,35 @@ public class RadioPlayerService extends Service implements PlayerCallback {
     public static final String NOTIFICATION_INTENT_CANCEL = "co.mobiwise.library.notification.radio.INTENT_CANCEL";
 
     public static final String NOTIFICATION_INTENT_OPEN_PLAYER = "co.mobiwise.library.notification.radio.INTENT_OPENPLAYER";
-
+    /**
+     * Stop action. If another mediaplayer will start.It needs
+     * to send broadcast to stop this service.
+     */
+    public static final String ACTION_MEDIAPLAYER_STOP = "co.mobiwise.library.ACTION_STOP_MEDIAPLAYER";
+    /**
+     * Notification ID
+     */
+    private static final int NOTIFICATION_ID = 001;
+    /**
+     * Logging control variable
+     */
+    private static boolean isLogging = false;
+    /**
+     * Binder
+     */
+    public final IBinder mLocalBinder = new LocalBinder();
+    /**
+     * Radio buffer and decode capacity(DEFAULT VALUES)
+     */
+    private final int AUDIO_BUFFER_CAPACITY_MS = 800;
+    private final int AUDIO_DECODE_CAPACITY_MS = 400;
+    /**
+     * Stream url suffix
+     */
+    private final String SUFFIX_PLS = ".pls";
+    private final String SUFFIX_RAM = ".ram";
+    private final String SUFFIX_WAX = ".wax";
+    List<RadioListener> mListenerList;
     /**
      * Notification current values
      */
@@ -48,57 +76,14 @@ public class RadioPlayerService extends Service implements PlayerCallback {
     private String songName = "";
     private int smallImage = R.drawable.default_art;
     private Bitmap artImage;
-
-    /**
-     * Notification ID
-     */
-    private static final int NOTIFICATION_ID = 001;
-
-    /**
-     * Logging control variable
-     */
-    private static boolean isLogging = false;
-
-    /**
-     * Radio buffer and decode capacity(DEFAULT VALUES)
-     */
-    private final int AUDIO_BUFFER_CAPACITY_MS = 800;
-    private final int AUDIO_DECODE_CAPACITY_MS = 400;
-
-    /**
-     * Stream url suffix
-     */
-    private final String SUFFIX_PLS = ".pls";
-    private final String SUFFIX_RAM = ".ram";
-    private final String SUFFIX_WAX = ".wax";
-
-    /**
-     * State enum for Radio Player state (IDLE, PLAYING, STOPPED, INTERRUPTED)
-     */
-    public enum State {
-        IDLE,
-        PLAYING,
-        STOPPED,
-    }
-
-    List<RadioListener> mListenerList;
-
     /**
      * Radio State
      */
     private State mRadioState;
-
     /**
      * Current radio URL
      */
     private String mRadioUrl;
-
-    /**
-     * Stop action. If another mediaplayer will start.It needs
-     * to send broadcast to stop this service.
-     */
-    public static final String ACTION_MEDIAPLAYER_STOP = "co.mobiwise.library.ACTION_STOP_MEDIAPLAYER";
-
     /**
      * AAC Radio Player
      */
@@ -135,29 +120,49 @@ public class RadioPlayerService extends Service implements PlayerCallback {
      * @onRadioStarted and @onRadioStopped methods will be release lock.
      */
     private boolean mLock;
+    PhoneStateListener phoneStateListener = new PhoneStateListener() {
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            if (state == TelephonyManager.CALL_STATE_RINGING) {
 
+                /**
+                 * Stop radio and set interrupted if it is playing on incoming call.
+                 */
+                if (isPlaying()) {
+                    isInterrupted = true;
+                    stop();
+                }
+
+            } else if (state == TelephonyManager.CALL_STATE_IDLE) {
+
+                /**
+                 * Keep playing if it is interrupted.
+                 */
+                if (isInterrupted)
+                    play(mRadioUrl);
+
+            } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+
+                /**
+                 * Stop radio and set interrupted if it is playing on outgoing call.
+                 */
+                if (isPlaying()) {
+                    isInterrupted = true;
+                    stop();
+                }
+
+            }
+            super.onCallStateChanged(state, incomingNumber);
+        }
+    };
     /**
      * Notification manager
      */
     private NotificationManager mNotificationManager;
 
-    /**
-     * Binder
-     */
-    public final IBinder mLocalBinder = new LocalBinder();
-
     @Override
     public IBinder onBind(Intent intent) {
         return mLocalBinder;
-    }
-
-    /**
-     * Binder
-     */
-    public class LocalBinder extends Binder {
-        public RadioPlayerService getService() {
-            return RadioPlayerService.this;
-        }
     }
 
     /**
@@ -371,7 +376,6 @@ public class RadioPlayerService extends Service implements PlayerCallback {
         }
     }
 
-
     /**
      * Return AAC player. If it is not initialized, creates and returns.
      *
@@ -400,42 +404,6 @@ public class RadioPlayerService extends Service implements PlayerCallback {
         }
         return mRadioPlayer;
     }
-
-    PhoneStateListener phoneStateListener = new PhoneStateListener() {
-        @Override
-        public void onCallStateChanged(int state, String incomingNumber) {
-            if (state == TelephonyManager.CALL_STATE_RINGING) {
-
-                /**
-                 * Stop radio and set interrupted if it is playing on incoming call.
-                 */
-                if (isPlaying()) {
-                    isInterrupted = true;
-                    stop();
-                }
-
-            } else if (state == TelephonyManager.CALL_STATE_IDLE) {
-
-                /**
-                 * Keep playing if it is interrupted.
-                 */
-                if (isInterrupted)
-                    play(mRadioUrl);
-
-            } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-
-                /**
-                 * Stop radio and set interrupted if it is playing on outgoing call.
-                 */
-                if (isPlaying()) {
-                    isInterrupted = true;
-                    stop();
-                }
-
-            }
-            super.onCallStateChanged(state, incomingNumber);
-        }
-    };
 
     /**
      * Check supported suffix
@@ -508,7 +476,7 @@ public class RadioPlayerService extends Service implements PlayerCallback {
          * Pending intents
          */
         PendingIntent playPausePending = PendingIntent.getBroadcast(this, 23, intentPlayPause, 0);
-        PendingIntent openPending = PendingIntent.getBroadcast(this, 0, intentOpenPlayer, 0);
+        PendingIntent openPending = PendingIntent.getActivity(this, 0, intentOpenPlayer, 0);
         PendingIntent cancelPending = PendingIntent.getBroadcast(this, 12, intentCancel, 0);
 
         /**
@@ -577,13 +545,30 @@ public class RadioPlayerService extends Service implements PlayerCallback {
         buildNotification();
     }
 
-
     public void updateNotification(String singerName, String songName, int smallImage, Bitmap artImage) {
         this.singerName = singerName;
         this.songName = songName;
         this.smallImage = smallImage;
         this.artImage = artImage;
         buildNotification();
+    }
+
+    /**
+     * State enum for Radio Player state (IDLE, PLAYING, STOPPED, INTERRUPTED)
+     */
+    public enum State {
+        IDLE,
+        PLAYING,
+        STOPPED,
+    }
+
+    /**
+     * Binder
+     */
+    public class LocalBinder extends Binder {
+        public RadioPlayerService getService() {
+            return RadioPlayerService.this;
+        }
     }
 
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_now"
+        android:title="@string/menu_now"
+        android:icon="@drawable/ic_settings_input_antenna_24dp"/>
+    <item
+        android:id="@+id/action_schedule"
+        android:title="@string/menu_schedule"
+        android:icon="@drawable/ic_event_note_24dp"/>
+    <item
+        android:id="@+id/action_about"
+        android:title="@string/menu_about"
+        android:icon="@drawable/ic_info_outline_24dp"/>
+</menu>

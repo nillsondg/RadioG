@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -29,6 +30,7 @@ import ru.guu.radiog.R;
  */
 public class RadioFragment extends Fragment {
     private final String KEY_RADIO_STARTED = "key_radio_started";
+    private final String KEY_STREAM_TITLE = "key_stream_title";
 
     private ToggleButton playButton;
     private boolean buttonPressed = false;
@@ -40,6 +42,8 @@ public class RadioFragment extends Fragment {
     private ImageView mStreamImage;
     private RadioController mListener;
     private TextView mStreamTitle;
+    private ImageButton volumeUpButton;
+    private ImageButton volumeDownButton;
 
     public static RadioFragment newInstance() {
         return new RadioFragment();
@@ -54,31 +58,17 @@ public class RadioFragment extends Fragment {
         mStreamTitle = (TextView)view.findViewById(R.id.stream_title);
         seekBar = (SeekBar)view.findViewById(R.id.seekBar);
         playButton = (ToggleButton)view.findViewById(R.id.playButton);
+        volumeDownButton = (ImageButton)view.findViewById(R.id.buttonVolumeDown);
+        volumeUpButton = (ImageButton)view.findViewById(R.id.buttonVolumeUp);
 
-        if (Build.VERSION.SDK_INT >= 21) {
-            mStreamImage.setClipToOutline(true);
-            ViewOutlineProvider viewOutlineProvider = new ViewOutlineProvider() {
-                @Override
-                public void getOutline(View view, Outline outline) {
-                    if (Build.VERSION.SDK_INT >= 21) {
-                        outline.setRoundRect(0, 0, mStreamImage.getWidth(), mStreamImage.getHeight(), 16);
-                        outline.setAlpha(0.5f);
-                    }
-                }
-            };
-            mStreamImage.setOutlineProvider(viewOutlineProvider);
-        }
+        initVolumeControllers();
+        initStreamImageAnimation();
+        initPlayButton();
 
+        return view;
+    }
 
-        playButton.setOnCheckedChangeListener((CompoundButton compoundButton, boolean checked) -> {
-            buttonPressed = true;
-            if (checked && mListener != null && !mListener.isPlaying()) {
-                mListener.startRadio();
-            } else if (!checked && mListener != null && mListener.isPlaying()) {
-                mListener.stopRadio();
-            }
-        });
-
+    private void initVolumeControllers() {
         audioManager = (AudioManager)getContext().getSystemService(Context.AUDIO_SERVICE);
         seekBar.setMax(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
         seekBar.setProgress(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
@@ -99,7 +89,44 @@ public class RadioFragment extends Fragment {
 
         mContentObserver = new VolumeContentObserver(getContext(), new Handler());
 
-        return view;
+        volumeDownButton.setOnClickListener((View v) -> {
+            seekBar.setProgress(Math.max(0, seekBar.getProgress() - 1));
+        });
+
+        volumeUpButton.setOnClickListener((View v) -> {
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            seekBar.setProgress(Math.min(maxVolume, seekBar.getProgress() + 1));
+        });
+    }
+
+    /**
+     * apple music like animation
+     */
+    private void initStreamImageAnimation() {
+        if (Build.VERSION.SDK_INT >= 21) {
+            mStreamImage.setClipToOutline(true);
+            ViewOutlineProvider viewOutlineProvider = new ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, Outline outline) {
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        outline.setRoundRect(0, 0, mStreamImage.getWidth(), mStreamImage.getHeight(), 16);
+                        outline.setAlpha(0.5f);
+                    }
+                }
+            };
+            mStreamImage.setOutlineProvider(viewOutlineProvider);
+        }
+    }
+
+    private void initPlayButton() {
+        playButton.setOnCheckedChangeListener((CompoundButton compoundButton, boolean checked) -> {
+            buttonPressed = true;
+            if (checked && mListener != null && !mListener.isPlaying()) {
+                mListener.startRadio();
+            } else if (!checked && mListener != null && mListener.isPlaying()) {
+                mListener.stopRadio();
+            }
+        });
     }
 
     @Override
@@ -118,6 +145,7 @@ public class RadioFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(KEY_RADIO_STARTED, started);
+        outState.putCharSequence(KEY_STREAM_TITLE, mStreamTitle.getText());
     }
 
     @Override
@@ -125,6 +153,7 @@ public class RadioFragment extends Fragment {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
             started = savedInstanceState.getBoolean(KEY_RADIO_STARTED);
+            mStreamTitle.setText(savedInstanceState.getCharSequence(KEY_STREAM_TITLE));
         }
     }
 

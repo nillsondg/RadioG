@@ -23,7 +23,7 @@
             android:layout_height="56dp"
             app:itemIconTint="@color/colorWhite"
             app:itemTextColor="@color/colorWhite"
-            app:menu="@menu/nav_menu"/>
+            app:menu="@menu/nav_menu_without_profile"/>
 
     </android.support.design.widget.AppBarLayout>
 
