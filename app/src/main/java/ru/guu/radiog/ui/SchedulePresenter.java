@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -26,8 +27,8 @@ public class SchedulePresenter implements RadioContract.SchedulePresenter {
     private final static int ORGANIZATION_ID = 189;
     private static final String LOG_TAG = SchedulePresenter.class.getSimpleName();
     private final ApiService mApiService;
-    private Disposable mDisposable;
     private final RadioContract.ScheduleView mView;
+    private Disposable mDisposable;
     private Date mDate = Calendar.getInstance().getTime();
     private Context mContext;
 
@@ -66,6 +67,9 @@ public class SchedulePresenter implements RadioContract.SchedulePresenter {
                             boolean isLast = result.getData().size() < LENGTH;
                             boolean isEmpty = result.getData().size() == 1;
                             if (result.isOk()) {
+                                Collections.sort(result.getData(), (Event lhs, Event rhs) ->
+                                        lhs.getDateList().get(0).getStartDateTime()
+                                                .compareTo(rhs.getDateList().get(0).getStartDateTime()));
                                 if (isEmpty && mView.isEmpty()) {
                                     mView.showEmptyState();
                                 } else if (forceLoad) {
