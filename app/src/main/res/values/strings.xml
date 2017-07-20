@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Radio G</string>
+    <string name="app_name" translatable="false">RadioG</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
