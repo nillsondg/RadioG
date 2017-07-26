@@ -18,6 +18,8 @@ public class ApiFactory {
 
     private static final String EVENDATE_HOST_NAME = "https://evendate.io";
     private static final String GUU_HOST_NAME = "https://my.guu.ru";
+    private static final String ITUNES_HOST_NAME = "https://itunes.apple.com";
+    private static final String LASTFM_HOST_NAME = "http://ws.audioscrobbler.com/";
     private static final int CONNECT_TIMEOUT = 15;
     private static final int WRITE_TIMEOUT = 60;
     private static final int TIMEOUT = 60;
@@ -46,6 +48,16 @@ public class ApiFactory {
     @NonNull
     public static GuuApiService getGuuService() {
         return getRetrofit(GUU_HOST_NAME).create(GuuApiService.class);
+    }
+
+    @NonNull
+    public static ItunesApiService getItunesService() {
+        return getRetrofit(ITUNES_HOST_NAME).create(ItunesApiService.class);
+    }
+
+    @NonNull
+    public static LastFmApiService getLastFmService() {
+        return getRetrofit(LASTFM_HOST_NAME).create(LastFmApiService.class);
     }
 
     @NonNull

@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.squareup.picasso.Picasso;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import ru.guu.radiog.R;
+import ru.guu.radiog.network.ApiFactory;
+import ru.guu.radiog.network.model.ItunesSong;
+import ru.guu.radiog.network.model.LastFmTrack;
 
 /**
  * control radio stream and audio volume
@@ -44,6 +53,9 @@ public class RadioFragment extends Fragment {
     private TextView mStreamTitle;
     private ImageButton volumeUpButton;
     private ImageButton volumeDownButton;
+
+    private Disposable mDisposable;
+    private Disposable mDisposableItunes;
 
     public static RadioFragment newInstance() {
         return new RadioFragment();
@@ -172,16 +184,67 @@ public class RadioFragment extends Fragment {
         }
 
         getContext().getContentResolver().registerContentObserver(android.provider.Settings.System.CONTENT_URI, true, mContentObserver);
+        findArtImage();
     }
 
     @Override
     public void onStop() {
         super.onStop();
         getContext().getContentResolver().unregisterContentObserver(mContentObserver);
+        if (mDisposable != null)
+            mDisposable.dispose();
     }
 
     public void setStreamTitle(String streamTitle) {
         mStreamTitle.setText(streamTitle);
+        findArtImage();
+    }
+
+    public void findArtImage() {
+        String streamTitle = mStreamTitle.getText().toString();
+        if (streamTitle.isEmpty())
+            return;
+        String[] parts = streamTitle.split("-");
+        if (parts.length < 2)
+            return;
+        String artist = parts[0].trim();
+        String track = parts[1].trim();
+        findArtImageByItunes(artist, track);
+
+    }
+
+    private void findArtImageByItunes(String artist, String track) {
+        mDisposableItunes = ApiFactory.getItunesService().getSongs(artist + " " + track, "song")
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                            if (result.getResultCount() > 0) {
+                                ItunesSong song = result.getResults().get(0);
+                                Picasso.with(getContext()).load(song.getArtworkUrl600()).into(mStreamImage);
+                                mListener.updateNotification(artist + " - " + track, song.getArtworkUrl600());
+                            } else {
+                                findArtImageByLastFm(artist, track);
+                            }
+                        }
+                );
+    }
+
+    private void findArtImageByLastFm(String artist, String track) {
+        mDisposable = ApiFactory.getLastFmService().getSongs("track.getInfo", getString(R.string.lastfm_api_key), artist, track, "json")
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                            if (result.getTrack() != null && result.getTrack().getAlbum() != null
+                                    && result.getTrack().getAlbum().getImages() != null) {
+                                LastFmTrack song = result.getTrack();
+                                String artUrl = song.getAlbum().getImages().get(4).getImageUrl();
+                                Picasso.with(getContext()).load(artUrl).into(mStreamImage);
+                                mListener.updateNotification(artist + " - " + track, artUrl);
+                            } else {
+                                mStreamImage.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.radiog_logo));
+                            }
+                        }
+                );
     }
 
     public void onRadioStarted() {
@@ -237,6 +300,10 @@ public class RadioFragment extends Fragment {
         void stopRadio();
 
         boolean isPlaying();
+
+        void updateNotification(String songName, String artUrl);
+
+        void resetNotification(String songName);
     }
 
     public class VolumeContentObserver extends ContentObserver {

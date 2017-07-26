@@ -1,5 +1,6 @@
 package ru.guu.radiog.ui;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
@@ -14,6 +15,9 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -29,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements RadioListener, Ra
     private final String RADIO_URL = "http://listen.shoutcast.com/radio-g";
     private final String KEY_SELECTED_DATE = "key_selected_date";
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private final int TAB_COUNT = 3;
     private Date mSelectedDate;
     private RadioManager mRadioManager;
     private RadioFragment radioFragment;
@@ -39,8 +44,6 @@ public class MainActivity extends AppCompatActivity implements RadioListener, Ra
     private AppBarLayout mAppBarLayout;
     private AppBarLayout mCalendarFrame;
     private ScheduleFragment mScheduleFragment;
-    private final int TAB_COUNT = 3;
-
     private int currentItem = 0;
 
     @Override
@@ -246,5 +249,21 @@ public class MainActivity extends AppCompatActivity implements RadioListener, Ra
     @Override
     public boolean isPlaying() {
         return mRadioManager.isPlaying();
+    }
+
+    @Override
+    public void updateNotification(String songName, String artUrl) {
+        AsyncTask.execute(() -> {
+            try {
+                mRadioManager.updateNotification(getString(R.string.app_name), songName, R.drawable.radiog_logo, Picasso.with(this).load(artUrl).get());
+            } catch (IOException e) {
+                resetNotification(songName);
+            }
+        });
+    }
+
+    @Override
+    public void resetNotification(String songName) {
+        mRadioManager.updateNotification(getString(R.string.app_name), songName, R.drawable.radiog_logo, R.drawable.radiog_logo);
     }
 }
