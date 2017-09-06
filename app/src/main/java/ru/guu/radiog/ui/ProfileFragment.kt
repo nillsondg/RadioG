@@ -21,14 +21,14 @@ class ProfileFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater!!.inflate(R.layout.fragment_profile, container, false)
-        mName = view.findViewById(R.id.name) as TextView
-        mEmail = view.findViewById(R.id.email) as TextView
-        mRole = view.findViewById(R.id.role) as TextView
+        mName = view.findViewById(R.id.name)
+        mEmail = view.findViewById(R.id.email)
+        mRole = view.findViewById(R.id.role)
         val userData = RadioPreferenceManager.newInstance(context).userData ?: return view
         mName.text = userData.cn
         mEmail.text = userData.mail
         mRole.text = userData.title
-        mExitButton = view.findViewById(R.id.exit_button) as Button
+        mExitButton = view.findViewById(R.id.exit_button)
         mExitButton.setOnClickListener { _: View ->
             RadioPreferenceManager.newInstance(context).singedIn = false
             val intent = Intent(context, LoginActivity::class.java)

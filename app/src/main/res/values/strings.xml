@@ -21,11 +21,13 @@
     <string name="name2">Надежда Фадеева</string>
     <string name="name3">Евгений Горшков</string>
     <string name="name4">Павел Турусов</string>
+    <string name="name5">Максим Секретарёв</string>
 
     <string name="description1">Ежедневный музыкальный сет «Альтернатива»</string>
     <string name="description2">Ответы на актуальные вопросы молодежи в «Generation 21»</string>
     <string name="description3">Познавательная передача «Время путешествий»</string>
     <string name="description4">Разбор и анонс спортивных событий в «Спортивный вестник»</string>
+    <string name="description5">Дизайн</string>
 
     <string name="state_error">Problem with loading data</string>
     <string name="state_error_description">Сheck internet connection</string>
